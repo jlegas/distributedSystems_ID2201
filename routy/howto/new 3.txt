@@ -1,0 +1,17 @@
+erl -name sweden@localhost -setcookie routy -connect_all false
+
+routy:start(r1,stockholm), routy:start(r2,lund), routy:start(r3,malmo), routy:start(r4,uppsala), routy:start(r5,goteborg).
+
+r1 ! {add, lund, {r2, 'sweden@localhost'}}, r1 ! {add, malmo, {r3, 'sweden@localhost'}}, r2 ! {add, uppsala, {r4, 'sweden@localhost'}}, r3 ! {add, goteborg, {r5, 'sweden@localhost'}}, r5 ! {add, uppsala, {r4, 'sweden@localhost'}}, r4 ! {add, stockholm, {r1, 'sweden@localhost'}}.
+
+r1 ! broadcast, r2 ! broadcast, r3 ! broadcast, r4 ! broadcast, r5 ! broadcast.
+
+r1 ! update, r2 ! update, r3 ! update, r4 ! update, r5 ! update.
+
+r1 ! {send, uppsala, 'hello'}.
+
+routy:stop(r2).
+
+r1 ! update.
+
+r1 ! {send, uppsala, 'hello'}.

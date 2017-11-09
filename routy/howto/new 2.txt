@@ -1,0 +1,48 @@
+%execute on both
+Com1 = 'sweden@127.0.0.1',
+Com2 = 'finland@127.0.0.1',
+S1 = fun(X) -> status:query({X, Com1}) end,
+S2 = fun(X) -> status:query({X, Com2}) end.
+
+%Step 1.1 on Com1:
+routy:start(lund, lund),
+routy:start(stockholm, stockholm).
+
+%Step 1.2 on Com2:
+routy:start(helsinki, helsinki),
+routy:start(rovaniemi, rovaniemi),
+routy:start(tampere, tampere),
+routy:start(turku, turku),
+helsinki ! {add, stockholm, {stockholm, Com1}},
+helsinki ! {add, rovaniemi, {rovaniemi, Com2}},
+rovaniemi ! {add, tampere, {tampere, Com2}},
+tampere ! {add, rovaniemi, {rovaniemi, Com2}},
+tampere ! {add, turku, {turku, Com2}},
+turku ! {add, tampere, {tampere, Com2}},
+turku ! {add, stockholm, {stockholm, Com1}}.
+
+%Step 2.1 on Com1:
+lund ! {add, stockholm, {stockholm, Com1}},
+stockholm ! {add, lund, {lund, Com1}},
+stockholm ! {add, helsinki, {helsinki, Com2}},
+stockholm ! {add, turku, {turku, Com2}},
+lund ! broadcast,
+stockholm ! broadcast.
+
+%Step 2.2 on Com2:
+helsinki ! broadcast,
+rovaniemi ! broadcast,
+tampere ! broadcast,
+turku ! broadcast.
+	% wait a moment to be sure everything finished
+helsinki ! update,
+rovaniemi ! update,
+tampere ! update,
+turku ! update.
+
+%Step 3.1 on Com1:
+stockholm ! update,
+lund ! update.
+
+Sending:
+lund ! {send, rovaniemi, "test"}.
